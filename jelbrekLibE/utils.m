@@ -1,49 +1,33 @@
 #import "utils.h"
 #import "kernel_utils.h"
+#import "offsets.h"
+#import "time_waste/IOSurface_stuff.h"
+extern size_t page_size;
 
-// simplified & commented version of https://github.com/JonathanSeals/kernelversionhacker
-// this method relies on brute forcing the kaslr slide
-// we know how big the slide can be and where the unslid kernel base is
-// since we can't read from an unexisting address (smaller than the actual base) we start from the biggest possible slide and then go down
-// the goal is to find what address points to the arm64 macho header: 0xfeedfacf
-// for some reason 0xfeedfacf can be found multiple times so we need more checking than that
-// for that we check for the presence of some strings right after it
 
+// The method used to find the kernel base is from
+// the oob_timestamp exploit by Brandon Azad.
 uint64_t FindKernelBase() {
-    printf("[*] Bruteforcing kaslr slide\n");
-    
-    #define slid_base  base+slide
-    uint64_t base = 0xFFFFFFF007004000; // unslid kernel base on iOS 11
-    uint32_t slide = 0x21000000; // maximum value the kaslr slide can have
-    uint32_t data = KernelRead_32bits(slid_base); // the data our address points to
-    
-    for(;;) { /* keep running until we find the "__text" string
-                     string must be less than 0x2000 bytes ahead of the kernel base
-                     if it's not there the loop will go again */
-        
-        while (data != 0xFEEDFACF) { // find the macho header
-            slide -= 0x200000;
-            data = KernelRead_32bits(slid_base);
-        }
-        
-        printf("[*] Found 0xfeedfacf header at 0x%llx, is that correct?\n", slid_base);
-        
-        char buf[0x120];
-        for (uint64_t addr = slid_base; addr < slid_base + 0x2000; addr += 8 /* 64 bits / 8 bits / byte = 8 bytes */) {
-            KernelRead(addr, buf, 0x120); // read 0x120 bytes into a char buffer
-            
-            if (!strcmp(buf, "__text") && !strcmp(buf + 16, "__PRELINK_TEXT")) { // found it!
-                printf("\t[+] Yes! Found __text and __PRELINK_TEXT!\n");
-                printf("\t[i] kernel base at 0x%llx\n", slid_base);
-                printf("\t[i] kaslr slide is 0x%x\n", slide);
-                printf("\t[i] kernel header is 0x%x\n", KernelRead_32bits(slid_base));
-                return slid_base;
-            }
-            data = 0;
-        }
-        printf("\t[-] Nope. Can't find __text and __PRELINK_TEXT, trying again!\n");
-    }
-    return 0;
+    printf("[+] Finding kernel base..\n")
+      uint64_t IOSRUC_port_addr = FindPortAddress(IOSurfaceRootUserClient);
+      uint64_t IOSRUC_addr = KernelRead_64bits(IOSRUC_port_addr + koffset(KSTRUCT_OFFSET_IPC_PORT_IP_KOBJECT));
+      uint64_t kerntxt_addr = KernelRead_64bits(IOSRUC_addr);
+      kerntxt_addr |= 0xffffff8000000000;
+      printf("[i] kerntxt_addr : 0x%11x", kerntxt_addr);
+      uint64_t kernel_base = 0;
+      uint64_t kernel_page = kerntxt_addr & ~(page_size -1);
+      for (;; kernel_page -= page_size){
+          const uint32_t mach_header[4] = { 0xfeedfacf, 0x0100000c, 2, 2};
+          uint32_t data[4] = {};
+          bool ok = KernelRead(kernel_page, data, sizeof(data));
+          data[2] = mach_header[2];
+          if(ok && memcmp(data, mach_header, sizeof(mach_header)) == 0){
+              kernel_base = kernel_page;
+              break;
+          }
+      }
+    printf("[i] kernel_base : 0x%01611x", kernel_base);
+    return kernel_base;
 }
 
 uint64_t binary_load_address(mach_port_t tp) {

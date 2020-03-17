@@ -6,6 +6,7 @@
 #import "kexecute.h"
 #import "jelbrek.h"
 
+
 static mach_port_t tfpzero;
 
 void init_kernel_utils(mach_port_t tfp0) {
@@ -407,6 +408,4 @@ uint64_t ZmFixAddr(uint64_t addr) {
     
     return zm_tmp < zm_hdr.start ? zm_tmp + 0x100000000 : zm_tmp;
 }
-
-
 
