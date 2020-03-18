@@ -2,7 +2,7 @@
 #import "kernel_utils.h"
 #import "patchfinder64.h"
 #import "offsetof.h"
-#import "offsets.h"
+#import "time_waste/offsets.h"
 #import "kexecute.h"
 #import "jelbrek.h"
 

@@ -7,7 +7,7 @@
 #import <sys/sysctl.h>
 #import <sys/utsname.h>
 
-#import "offsets.h"
+#import "time_waste/offsets.h"
 #import "offsetof.h"
 
 #define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)

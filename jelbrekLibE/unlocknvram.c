@@ -14,7 +14,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #import "kernel_utils.h"
 #import "offsetof.h"
-#import "offsets.h"
+#import "time_waste/offsets.h"
 
 // convertPropToObject calls getOFVariableType
 // open convertPropToObject, look for first vtable call -- that'd be getOFVariableType

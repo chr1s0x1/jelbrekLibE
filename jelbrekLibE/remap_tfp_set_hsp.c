@@ -10,7 +10,7 @@
 
 #import <stdlib.h>
 #import "kernel_utils.h"
-#import "offsets.h"
+#import "time_waste/offsets.h"
 #import "patchfinder64.h"
 
 kern_return_t mach_vm_remap(vm_map_t dst, mach_vm_address_t *dst_addr, mach_vm_size_t size, mach_vm_offset_t mask, int flags, vm_map_t src, mach_vm_address_t src_addr, boolean_t copy, vm_prot_t *cur_prot, vm_prot_t *max_prot, vm_inherit_t inherit);
