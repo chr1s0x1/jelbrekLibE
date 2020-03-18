@@ -13,9 +13,10 @@ uint64_t FindKernelBase() {
       uint64_t IOSRUC_addr = KernelRead_64bits(IOSRUC_port_addr + koffset(KSTRUCT_OFFSET_IPC_PORT_IP_KOBJECT));
       uint64_t kerntxt_addr = KernelRead_64bits(IOSRUC_addr);
       kerntxt_addr |= 0xffffff8000000000;
-      printf("[i] kerntxt_addr : 0x%11x", kerntxt_addr);
+      printf("[i] kerntxt_addr : 0x%11x \n", kerntxt_addr);
       uint64_t kernel_base = 0;
       uint64_t kernel_page = kerntxt_addr & ~(page_size -1);
+     printf("[i] kernel_page : 0x%11x \n", kernel_page);
       for (;; kernel_page -= page_size){
           const uint32_t mach_header[4] = { 0xfeedfacf, 0x0100000c, 2, 2};
           uint32_t data[4] = {};
@@ -24,9 +25,11 @@ uint64_t FindKernelBase() {
           if(ok && memcmp(data, mach_header, sizeof(mach_header)) == 0){
               kernel_base = kernel_page;
               break;
+          }else{
+              printf("[-] Keep walking..\n");
           }
       }
-    printf("[i] kernel_base : 0x%01611x", kernel_base);
+    printf("[i] kernel_base : 0x%01611x \n", kernel_base);
     return kernel_base;
 }
 
