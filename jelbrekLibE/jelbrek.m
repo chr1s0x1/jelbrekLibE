@@ -14,7 +14,7 @@ int init_jelbrek(mach_port_t tfpzero) {
             printf("[-] tfp0 port not valid\n");
             return 1;
         }
-        init_offsets(); // Ian Beer's offset struct
+        offsets_init(); // Ian Beer's offset struct
         
         //------- init the required variables -------//
         TFP0 = tfpzero;
@@ -88,7 +88,7 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
             printf("[-] tfp0 port not valid\n");
             return 1;
         }
-        init_offsets(); // Ian Beer's offset struct
+        offsets_init(); // Ian Beer's offset struct
         
         //------- init the required variables -------//
         TFP0 = tfpzero;

@@ -355,6 +355,12 @@ XREF64(const uint8_t *buf, addr_t start, addr_t end, addr_t what)
                 return i;
             }
         }
+        else if ((op & 0x7F000000) == 0x37000000) {
+            uint64_t addr = i + 4 * ((op & 0x7FFE0) >> 5);
+            if (addr == what) {
+                return i;
+            }
+        }
         if (value[reg] == what) {
             return i;
         }
@@ -498,6 +504,8 @@ static addr_t Kernel_entry = 0;
 static void *Kernel_mh = 0;
 static addr_t Kernel_delta = 0;
 
+static uint32_t magic = 0;
+
 int
 InitPatchfinder(addr_t base, const char *filename)
 {
@@ -514,7 +522,11 @@ InitPatchfinder(addr_t base, const char *filename)
     if (fd < 0) {
         return -1;
     }
-    
+
+    read(fd, &magic, 4);
+    if (magic == 0xbebafeca) {
+        lseek(fd, 28, SEEK_SET); // kerneldec gives a FAT binary for some reason
+    }
     rv = read(fd, buf, sizeof(buf));
     if (rv != sizeof(buf)) {
         close(fd);
@@ -654,6 +666,8 @@ InitPatchfinder(addr_t base, const char *filename)
         q = q + cmd->cmdsize;
     }
     
+    if (magic == 0xbebafeca) Kernel += 28;
+    
     close(fd);
     
     (void)base;
@@ -663,6 +677,7 @@ InitPatchfinder(addr_t base, const char *filename)
 void
 TermPatchfinder(void)
 {
+    if (magic == 0xbebafeca) Kernel -= 28;
     free(Kernel);
 }
 
@@ -673,6 +688,7 @@ TermPatchfinder(void)
 #define INSN_B    0x14000000, 0xFC000000
 #define INSN_CBZ  0x34000000, 0xFC000000
 #define INSN_ADRP 0x90000000, 0x9F000000
+#define INSN_TBNZ 0x37000000, 0x7F000000
 
 addr_t
 Find_register_value(addr_t where, int reg)
@@ -800,6 +816,15 @@ uint64_t Find_allproc(void) {
         return 0;
     }
     ref -= KernDumpBase;
+    
+    uint32_t op_before = *(uint32_t *)(Kernel + ref - 8);
+    if ((op_before & 0xFC000000) == 0x14000000) {
+        ref = Find_reference(ref - 4 + KernDumpBase, 1, 0);
+        if (!ref) {
+            return 0;
+        }
+        ref -= KernDumpBase;
+    }
     
     uint64_t start = BOF64(Kernel, XNUCore_Base, ref);
     if (!start) {

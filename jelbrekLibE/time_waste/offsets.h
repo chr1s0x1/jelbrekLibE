@@ -52,4 +52,4 @@ enum kstruct_offset {
 };
 
 int koffset(enum kstruct_offset offset);
-int init_offsets(void);
+void offsets_init(void);
