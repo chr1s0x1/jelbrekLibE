@@ -813,6 +813,7 @@ uint64_t Find_allproc(void) {
     // Find the first reference to the string
     addr_t ref = Find_strref("\"pgrp_add : pgrp is dead adding process\"", 1, 0, false);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -857,6 +858,7 @@ uint64_t Find_copyout(void) {
     // Find the first reference to the string
     addr_t ref = Find_strref("\"%s(%p, %p, %lu) - transfer too large\"", 2, 0, false);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -921,6 +923,7 @@ uint64_t Find_rootvnode(void) {
     addr_t ref = Find_strref("/var/run/.vfs_rsrc_streams_%p%x", 1, 0, false);
     
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -943,6 +946,7 @@ uint64_t Find_rootvnode(void) {
         ref = Find_strref("/var/run/.vfs_rsrc_streams_%p%x", 2, 0, false);
         
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
         
@@ -978,6 +982,7 @@ addr_t Find_vnode_lookup() {
     addr_t ref, call, bof, func;
     ref = Find_strref("/private/var/mobile", 0, 0, false);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     
@@ -991,6 +996,7 @@ addr_t Find_vnode_lookup() {
     if (!call) {
         ref = Find_strref("/private/var/mobile", 2, 0, false);
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
         ref -= KernDumpBase;
@@ -1030,6 +1036,7 @@ addr_t Find_vnode_lookup() {
 addr_t Find_vfs_context_current(void) {
     uint64_t string = Find_strref("apfs_vnop_renamex", 5, 0, true);
     if (!string) {
+        printf("strref of 0x%llx not found!", string);
         return 0;
     }
     string -= KernDumpBase;
@@ -1055,6 +1062,7 @@ addr_t Find_vfs_context_current(void) {
 addr_t Find_vnode_put(void) {
     uint64_t str = Find_strref("%s:%d: UNSET root_to_xid - on next boot, volume will root to liv", 1, 0, false);
     if (!str) {
+        printf("strref of 0x%llx not found!", str);
         return 0;
     }
     str -= KernDumpBase;
@@ -1088,6 +1096,7 @@ addr_t Find_trustcache(void) {
     if (!ref) {
         ref = Find_strref("%s: only allowed process can check the trust cache", 1, 0, false);
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
     }
@@ -1142,6 +1151,7 @@ addr_t Find_trustcache(void) {
             
             ref = Find_strref("\"loadable trust cache buffer too small (%ld) for entries claimed (%d)\"", 1, 4, false);
             if (!ref) {
+                printf("strref of 0x%llx not found!", ref);
                 return 0;
             }
             
@@ -1159,6 +1169,7 @@ addr_t Find_trustcache(void) {
         }
         
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
         ref -= KernDumpBase;
@@ -1177,6 +1188,7 @@ addr_t Find_pmap_load_trust_cache_ppl() {
     if (!ref) {
         ref = Find_strref("%s: trust cache already loaded, ignoring", 1, 0, false);
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
     }
@@ -1209,6 +1221,7 @@ addr_t Find_amficache() {
         // iOS 11
         ref = Find_strref("com.apple.MobileFileIntegrity", 0, 1, false);
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
         ref -= KernDumpBase;
@@ -1237,6 +1250,7 @@ okay:
     if (!val) {
         ref = Find_strref("%s: only allowed process can check the trust cache", 1, 1, false); // Trying to find AppleMobileFileIntegrityUserClient::isCdhashInTrustCache
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
         ref -= KernDumpBase;
@@ -1320,6 +1334,7 @@ addr_t Find_OSBoolean_True() {
     addr_t val;
     addr_t ref = Find_strref("Delay Autounload", 0, 0, false);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -1335,6 +1350,7 @@ addr_t Find_OSBoolean_True() {
     if (!weird_instruction) {
         ref = Find_strref("Delay Autounload", 2, 0, false);
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
         ref -= KernDumpBase;
@@ -1366,6 +1382,7 @@ addr_t Find_OSBoolean_False() {
 addr_t Find_osunserializexml() {
     addr_t ref = Find_strref("OSUnserializeXML: %s near line %d\n", 1, 0, false);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -1383,6 +1400,7 @@ addr_t Find_smalloc() {
     if (!ref) {
         ref = Find_strref("sandbox memory allocation failure", 1, 2, false);
         if (!ref) {
+            printf("strref of 0x%llx not found!", ref);
             return 0;
         }
     }
@@ -1430,6 +1448,7 @@ uint64_t Find_bootargs(void) {
     addr_t ref = Find_strref("\"bsd_init: cannot find root vnode: %s\"", 1, 0, false);
     
     if (ref == 0) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     
@@ -1513,6 +1532,7 @@ addr_t Find_l2tp_domain_module_stop() {
 addr_t Find_l2tp_domain_inited() {
     uint64_t ref = Find_strref("L2TP domain init\n", 1, 0, true);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -1528,6 +1548,7 @@ addr_t Find_l2tp_domain_inited() {
 addr_t Find_sysctl_net_ppp_l2tp() {
     uint64_t ref = Find_strref("L2TP domain terminate : PF_PPP domain does not exist...\n", 1, 0, true);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -1544,6 +1565,7 @@ addr_t Find_sysctl_net_ppp_l2tp() {
 addr_t Find_sysctl_unregister_oid() {
     uint64_t ref = Find_strref("L2TP domain terminate : PF_PPP domain does not exist...\n", 1, 0, true);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -1641,12 +1663,14 @@ addr_t Find_kernel_forge_pacda_gadget() {
 addr_t Find_IOUserClient_vtable() {
     uint64_t ref1 = Find_strref("IOUserClient", 2, 0, true);
     if (!ref1) {
+        printf("strref of 0x%llx not found!", ref1);
         return 0;
     }
     ref1 -= KernDumpBase;
     
     uint64_t ref2 = Find_strref("IOUserClient", 3, 0, true);
     if (!ref2) {
+        printf("strref of 0x%llx not found!", ref2);
         return 0;
     }
     ref2 -= KernDumpBase;
@@ -1695,6 +1719,7 @@ addr_t Find_IORegistryEntry__getRegistryEntryID() {
 addr_t Find_cs_gen_count() {
     uint64_t ref = Find_strref("CS Platform Exec Logging: Executing platform signed binary '%s'", 1, 2, false);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
@@ -1859,6 +1884,7 @@ addr_t Find_cs_find_md() {
 addr_t Find_kernel_memory_allocate() {
     uint64_t ref = Find_strref("\"kernel_memory_allocate: VM is not ready\"", 1, 0, true);
     if (!ref) {
+        printf("strref of 0x%llx not found!", ref);
         return 0;
     }
     ref -= KernDumpBase;
