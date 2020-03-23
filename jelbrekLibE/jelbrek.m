@@ -82,7 +82,7 @@ int init_jelbrek(mach_port_t tfpzero) {
 typedef int (*kexecFunc)(uint64_t function, size_t argument_count, ...);
 int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
     @autoreleasepool {
-        printf("[*] Initializing jelbrekLib\n");
+        printf("[*] Initializing jelbrekLibE\n");
         
         if (!MACH_PORT_VALID(tfpzero)) {
             printf("[-] tfp0 port not valid\n");
@@ -126,17 +126,21 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
             printf("[-] Failed to copy kernelcache with error: %s\n", [[error localizedDescription] UTF8String]);
             return 4;
         }
+        
+        printf("[*] Copied kernelcache\n");
  
-        // init
-        if (initWithKernelCache((char *)[newPath UTF8String])) {
+        // initiate KernelSymbolFinder
+        int init = initWithKernelCache((char *)[newPath UTF8String]);
+        if (init != 0) {
             printf("[-] Error initializing KernelSymbolFinder\n");
             return 4;
-        }
+        }else {
         
         printf("[+] Initialized KernelSymbolFinder\n");
         unlink((char *)[newPath UTF8String]);
-        
-        int ret = InitPatchfinder(0, (char *)[[newPath stringByAppendingString:@".dec"] UTF8String]); // patchfinder
+        }
+        // initiate Patchfinder
+        int ret = InitPatchfinder(NULL, (char *)[[newPath stringByAppendingString:@".dec"] UTF8String]); // patchfinder
         if (ret) {
             printf("[-] Failed to initialize patchfinder\n");
             return 3;

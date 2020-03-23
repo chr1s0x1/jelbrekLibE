@@ -163,10 +163,12 @@ int initWithKernelCache(const char *kernelcache) {
     const char *args[6] = { "kerneldec", "-q", "-i", kernelcache, "-o", decomp };
 
     int ret = kerneldec(6, (char **)args);
-    if (ret) {
+    if (ret != 0) {
         printf("[-] Failed to decompress kernel\n");
         return -1;
     }
+    
+    printf("[*] Decompressed kernel\n");
     
     file = fopen(decomp, "rb");
     if (!file) {
@@ -174,5 +176,6 @@ int initWithKernelCache(const char *kernelcache) {
         return -1;
     }
     
+    printf("[*] Decompressed Kernelcache\n");
     return 0;
 }
