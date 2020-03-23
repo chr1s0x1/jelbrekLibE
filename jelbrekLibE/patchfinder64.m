@@ -520,6 +520,7 @@ InitPatchfinder(addr_t base, const char *filename)
     
     int fd = open(filename, O_RDONLY);
     if (fd < 0) {
+    printf("(pf) Failed to open file at %s\n", filename);
         return -1;
     }
 
@@ -530,11 +531,13 @@ InitPatchfinder(addr_t base, const char *filename)
     rv = read(fd, buf, sizeof(buf));
     if (rv != sizeof(buf)) {
         close(fd);
+        printf("(pf) Invalid read of kerneldec\n");
         return -1;
     }
     
     if (!MACHO(buf)) {
         close(fd);
+        printf("(pf) File given is not a MACHO");
         return -1;
     }
     
@@ -641,6 +644,7 @@ InitPatchfinder(addr_t base, const char *filename)
     Kernel = calloc(1, Kernel_size);
     if (!Kernel) {
         close(fd);
+        printf("(pf) Could not calloc Kerneldec\n");
         return -1;
     }
     
@@ -653,6 +657,7 @@ InitPatchfinder(addr_t base, const char *filename)
             if (sz != seg->filesize) {
                 close(fd);
                 free(Kernel);
+                printf("(pf) Kerneldec size doesn't match\n");
                 return -1;
             }
             if (!Kernel_mh) {

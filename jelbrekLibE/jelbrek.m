@@ -134,14 +134,14 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
         if (init != 0) {
             printf("[-] Error initializing KernelSymbolFinder\n");
             return 4;
-        }else {
+        }
         
         printf("[+] Initialized KernelSymbolFinder\n");
         unlink((char *)[newPath UTF8String]);
-        }
+        
         // initiate Patchfinder
         int ret = InitPatchfinder(NULL, (char *)[[newPath stringByAppendingString:@".dec"] UTF8String]); // patchfinder
-        if (ret) {
+        if (ret != 0) {
             printf("[-] Failed to initialize patchfinder\n");
             return 3;
         }
