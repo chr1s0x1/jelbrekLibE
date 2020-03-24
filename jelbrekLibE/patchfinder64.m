@@ -509,6 +509,12 @@ static uint32_t magic = 0;
 int
 InitPatchfinder(addr_t base, const char *filename)
 {
+    if(!filename) {
+        printf("(pf) invalid file path\n");
+        return -1;
+    }
+    
+    printf("(pf) Starting Patchfinder.. \n");
     size_t rv;
     uint8_t buf[0x4000];
     unsigned i, j;

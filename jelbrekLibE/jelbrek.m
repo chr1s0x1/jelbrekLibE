@@ -1,5 +1,6 @@
 #import "jelbrek.h"
 #import "amfi_utils.h"
+#import "kernelSymbolFinder.h"
 
 uint32_t KASLR_Slide;
 uint64_t KernelBase;
@@ -8,7 +9,7 @@ NSString *newPath;
 
 int init_jelbrek(mach_port_t tfpzero) {
     @autoreleasepool {
-        printf("[*] Initializing jelbrekLib\n");
+        printf("[*] Initializing jelbrekLibE\n");
         
         if (!MACH_PORT_VALID(tfpzero)) {
             printf("[-] tfp0 port not valid\n");
@@ -118,7 +119,7 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
         mkdir((char *)[docs UTF8String], 0777);
         newPath = [docs stringByAppendingPathComponent:[NSString stringWithFormat:@"%@_kernelcache", [formatter stringFromDate:[NSDate date]]]];
         
-        printf("[*] copying to %s\n", [newPath UTF8String]);
+        printf("[+] copying Kernelcache to %s\n", [newPath UTF8String]);
         
         // create a copy to be safe
         [fileManager copyItemAtPath:@"/System/Library/Caches/com.apple.kernelcaches/kernelcache" toPath:newPath error:&error];
@@ -127,11 +128,11 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
             return 4;
         }
         
-        printf("[*] Copied kernelcache\n");
+        printf("[*] copied Kernelcache at %s\n", [newPath UTF8String]);
  
         // initiate KernelSymbolFinder
-        int init = initWithKernelCache((char *)[newPath UTF8String]);
-        if (init != 0) {
+        int initKSF = initWithKernelCache((char *)[newPath UTF8String]);
+        if (initKSF != 0) {
             printf("[-] Error initializing KernelSymbolFinder\n");
             return 4;
         }
@@ -140,16 +141,15 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
         unlink((char *)[newPath UTF8String]);
         
         // initiate Patchfinder
-        int ret = InitPatchfinder(NULL, (char *)[[newPath stringByAppendingString:@".dec"] UTF8String]); // patchfinder
+        int ret = InitPatchfinder(0, (char *)[[newPath stringByAppendingString:@".dec"] UTF8String]); // patchfinder
         if (ret != 0) {
             printf("[-] Failed to initialize patchfinder\n");
             return 3;
         }
-        printf("[+] Initialized patchfinder\n");
+        printf("[*] Initialized patchfinder\n");
         
         kernel_exec = kexec;
         if (!kernel_exec) init_Kernel_Execute(); //kernel execution
-        
         return 0;
     }
 }
