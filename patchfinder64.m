@@ -478,6 +478,7 @@ Follow_cbz(const uint8_t *buf, addr_t cbz)
 #import <stdlib.h>
 #import <unistd.h>
 #import <mach-o/loader.h>
+#import <mach-o/fat.h>
 
 static uint8_t *Kernel = NULL;
 static size_t Kernel_size = 0;
