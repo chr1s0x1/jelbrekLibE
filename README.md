@@ -9,7 +9,7 @@
 - The dylib in the downloads folder will be updated after every commit with " [update dylib] description here ". If you don't see the most recent commit with it, changes are probably still to come. 
 
 ## Download JelbrekLibE
-jelbrekLibE can be downloaded in the downloads folder as a dylib and linked into Xcode. Check the ReadMe by Jake for more info.
+jelbrekLibE can be downloaded in the downloads folder as a dylib and linked into Xcode. Check the ReadMe by Jake for more info. (ReadMe 2.md)
 
 # Credits 
 - Jake James (jelbrekLib)

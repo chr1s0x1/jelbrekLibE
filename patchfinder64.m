@@ -504,7 +504,7 @@ static addr_t Kernel_entry = 0;
 static void *Kernel_mh = 0;
 static addr_t Kernel_delta = 0;
 
-static uint32_t magic = 0;
+static uint32_t arch_off = 0;
 
 int
 InitPatchfinder(addr_t base, const char *filename)
@@ -529,11 +529,18 @@ InitPatchfinder(addr_t base, const char *filename)
     printf("(pf) Failed to open file at %s\n", filename);
         return -1;
     }
-
+    
+    uint32_t magic;
     read(fd, &magic, 4);
     if (magic == 0xbebafeca) {
-        lseek(fd, 28, SEEK_SET); // kerneldec gives a FAT binary for some reason
+        struct fat_header fat;
+        lseek(fd, sizeof(fat), SEEK_SET);
+        struct fat_arch_64 arch;
+        read(fd, &arch, sizeof(arch));
+        arch_off = ntohl(arch.offset);
+        lseek(fd, arch_off, SEEK_SET); // kerneldec gives a FAT binary for some reason
     }
+    
     rv = read(fd, buf, sizeof(buf));
     if (rv != sizeof(buf)) {
         close(fd);
@@ -543,7 +550,7 @@ InitPatchfinder(addr_t base, const char *filename)
     
     if (!MACHO(buf)) {
         close(fd);
-        printf("(pf) File given is not a MACHO");
+        printf("(pf) Kernelcache is not a MACHO\n");
         return -1;
     }
     
@@ -677,7 +684,7 @@ InitPatchfinder(addr_t base, const char *filename)
         q = q + cmd->cmdsize;
     }
     
-    if (magic == 0xbebafeca) Kernel += 28;
+    Kernel += arch_off;
     
     close(fd);
     
@@ -688,7 +695,7 @@ InitPatchfinder(addr_t base, const char *filename)
 void
 TermPatchfinder(void)
 {
-    if (magic == 0xbebafeca) Kernel -= 28;
+    Kernel -= arch_off;
     free(Kernel);
 }
 
