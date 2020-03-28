@@ -1241,6 +1241,12 @@ int remountRootFS() {
     return ret;
 }
 
+int remount13() {
+    
+    return 0;
+}
+
+
 uint64_t getVnodeAtPath(const char *path) {
     uint64_t *vnode_ptr = (uint64_t *)malloc(8);
     if (vnode_lookup(path, 0, vnode_ptr, get_vfs_context())) {
