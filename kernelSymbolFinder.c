@@ -154,12 +154,6 @@ uint64_t find_symbol(const char *symbol, bool verbose) {
 }
 
 int initWithKernelCache(const char *kernelcache) {
-    // check and see if the path is valid
-    if(!kernelcache) {
-        printf("[-] Invalid path to Kernelcache\n");
-        return -1;
-    }
-    
     size_t pathlen = strlen(kernelcache);
     char decomp[pathlen + 5];
     memcpy(decomp, kernelcache, pathlen);

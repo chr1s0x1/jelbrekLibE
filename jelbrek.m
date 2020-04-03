@@ -128,7 +128,7 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
             return 4;
         }
         
-        printf("[*] copied Kernelcache at %s\n", [newPath UTF8String]);
+        printf("[*] copied Kernelcache\n");
  
         // initiate KernelSymbolFinder
         int initKSF = initWithKernelCache((char *)[newPath UTF8String]);
@@ -149,7 +149,8 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
         printf("[*] Initialized patchfinder\n");
         
         kernel_exec = kexec;
-        if (!kernel_exec) init_Kernel_Execute(); //kernel execution
+        // comment this out because it causes reboots
+       // if (!kernel_exec) init_Kernel_Execute(); //kernel execution
         return 0;
     }
 }
@@ -1239,11 +1240,6 @@ int remountRootFS() {
         remount1126(); // now we can use a normal mount patch!
     }
     return ret;
-}
-
-int remount13() {
-    
-    return 0;
 }
 
 
