@@ -176,6 +176,6 @@ int initWithKernelCache(const char *kernelcache) {
         return -1;
     }
     
-    printf("[*] Decompressed Kernelcache\n");
+    printf("[*] Finished KernelSymbolFinder\n");
     return 0;
 }
