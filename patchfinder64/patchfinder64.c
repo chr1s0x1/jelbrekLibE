@@ -593,6 +593,7 @@ static size_t kernel_size = 0;
 int
 init_kernel(size_t (*kread)(uint64_t, void *, size_t), addr_t kernel_base, const char *filename)
 {
+    printf("(pf) Starting patchfinder..\n");
     size_t rv;
     uint8_t buf[0x4000];
     unsigned i, j;
@@ -778,6 +779,7 @@ void
 term_kernel(void)
 {
     if (kernel != NULL) {
+        printf("(pf) Terminating..\n");
         free(kernel);
         kernel = NULL;
     }
