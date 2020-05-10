@@ -11,6 +11,9 @@
 #import <stdint.h>
 #import <string.h>
 #import <stdbool.h>
+#include <sys/syscall.h>
+#include <copyfile.h>
+
 
 #import "kernel_utils.h"
 
@@ -478,6 +481,7 @@ Follow_cbz(const uint8_t *buf, addr_t cbz)
 #import <stdlib.h>
 #import <unistd.h>
 #import <mach-o/loader.h>
+#import "mach-o_nlist.h"
 #import <mach-o/fat.h>
 
 static uint8_t *Kernel = NULL;
@@ -500,7 +504,9 @@ static addr_t Data_const_size = 0;
 addr_t PPLText_base = 0;
 addr_t PPLText_size = 0;
 
+static addr_t kerndumpbase_fileoff = -1;
 static addr_t KernDumpBase = -1;
+int save_fd = -1;
 static addr_t Kernel_entry = 0;
 static void *Kernel_mh = 0;
 static addr_t Kernel_delta = 0;
@@ -1106,6 +1112,16 @@ addr_t Find_vnode_put(void) {
         return 0;
     }
     return func + KernDumpBase + KASLR_Slide;
+}
+
+addr_t
+find_str(const char *string)
+{
+    uint8_t *str = Boyermoore_horspool_memmem(Kernel, Kernel_size, (uint8_t *)string, strlen(string));
+    if (!str) {
+        return 0;
+    }
+    return str - Kernel + KernDumpBase;
 }
 
 addr_t Find_trustcache(void) {
@@ -1946,3 +1962,77 @@ addr_t Find_kernel_map() {
     
     return val + KernDumpBase + KASLR_Slide;
 }
+
+addr_t
+FindSymbol(const char *symbol)
+{
+    if (!symbol) {
+        return 0;
+    }
+    
+    unsigned i;
+    const struct mach_header *hdr = Kernel_mh;
+    const uint8_t *q;
+    int is64 = 0;
+
+    if (IS64(hdr)) {
+        is64 = 4;
+    }
+
+/* XXX will only work on a decrypted kernel */
+    if (!Kernel_delta) {
+        return 0;
+    }
+
+    /* XXX I should cache these.  ohwell... */
+    q = (uint8_t *)(hdr + 1) + is64;
+    for (i = 0; i < hdr->ncmds; i++) {
+        const struct load_command *cmd = (struct load_command *)q;
+        if (cmd->cmd == LC_SYMTAB) {
+            const struct symtab_command *sym = (struct symtab_command *)q;
+            const char *stroff = (const char *)Kernel + sym->stroff + Kernel_delta;
+            if (is64) {
+                uint32_t k;
+                const struct nlist_64 *s = (struct nlist_64 *)(Kernel + sym->symoff + Kernel_delta);
+                for (k = 0; k < sym->nsyms; k++) {
+                    if (s[k].n_type & N_STAB) {
+                        continue;
+                    }
+                    if (s[k].n_value && (s[k].n_type & N_TYPE) != N_INDR) {
+                        if (!strcmp(symbol, stroff + s[k].n_un.n_strx)) {
+                            /* XXX this is an unslid address */
+                            return s[k].n_value;
+                        }
+                    }
+                }
+            }
+        }
+        q = q + cmd->cmdsize;
+    }
+    return 0;
+}
+
+addr_t find_snapshot_string(void) {
+    addr_t str = find_str("com.apple.os.update-");
+    if (!str) {
+        return 0;
+    }
+    
+    return str;
+}
+
+int patch_snapshot_string(void) {
+    if (save_fd < 0) return 1;
+    
+    addr_t addr = find_snapshot_string();
+    if (!addr) return 1;
+    
+    addr -= KernDumpBase;
+    
+    memcpy(Kernel + addr, "tim.apple.is.checkm8", strlen("tim.apple.is.checkm8"));
+    lseek(save_fd, addr + kerndumpbase_fileoff, SEEK_SET);
+    write(save_fd, Kernel + addr, 8);
+    
+    return 0;
+}
+

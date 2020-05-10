@@ -2,6 +2,7 @@
 #import "amfi_utils.h"
 #import "kernelSymbolFinder.h"
 
+
 uint32_t KASLR_Slide;
 uint64_t KernelBase;
 mach_port_t TFP0;
@@ -151,6 +152,7 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
         kernel_exec = kexec;
         // comment this out because it causes reboots
        // if (!kernel_exec) init_Kernel_Execute(); //kernel execution
+        char *kerncach = (char *)[newPath UTF8String];
         return 0;
     }
 }

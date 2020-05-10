@@ -17,6 +17,7 @@ uint64_t Find_zone_map_ref(void);
 uint64_t Find_osunserializexml(void);
 uint64_t Find_smalloc(void);
 uint64_t Find_sbops(void);
+uint64_t find_str(const char *string);
 uint64_t Find_bootargs(void);
 uint64_t Find_vfs_context_current(void);
 uint64_t Find_vnode_lookup(void);
