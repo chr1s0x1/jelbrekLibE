@@ -150,9 +150,8 @@ int init_with_kbase(mach_port_t tfpzero, uint64_t kernelBase, kexecFunc kexec) {
         printf("[*] Initialized patchfinder\n");
         
         kernel_exec = kexec;
-        // comment this out because it causes reboots
-       // if (!kernel_exec) init_Kernel_Execute(); //kernel execution
-        char *kerncach = (char *)[newPath UTF8String];
+        if (!kernel_exec) init_Kernel_Execute(); //kernel execution
+
         return 0;
     }
 }
@@ -163,6 +162,7 @@ void term_jelbrek() {
     TermPatchfinder(); // free memory used by patchfinder
     term_Kernel_Execute(); // free stuff used by kexecute
     unlink((char *)[[newPath stringByAppendingString:@".dec"] UTF8String]);
+    printf("[*] Clean up finished\n");
 }
 
 // Adds macho binaries on the AMFI trustcache
